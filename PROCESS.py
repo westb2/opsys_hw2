@@ -8,11 +8,10 @@ class Process(object):
 		self.burstMax=0
 		self.IOBOUND=False
 		self.burstTime=0
-
+		self.CPUBurst = 0
 	#this we will use to tell whether a process is IOBound or not
 	def isIOBound(self):
 		return self.IOBOUND
-
 	#we call this when we enter the CPU to set the burst time and return the burst time
 	def burstTime(self):
 		self.burstTime=random.randint(self.burstMin, self.burstMax)
@@ -35,6 +34,8 @@ class Process(object):
 			tmp=self.burstTime
 			self.burstTime=0
 			return tmp
+	def getCPUBurst(self):
+		return self.CPUBurst
 
 
 
@@ -45,6 +46,7 @@ class IOProcess(Process):
 		self.burstMin=20
 		self.burstMax=200
 		self.IOBOUND=True
+		self.CPUBurst = random.randint(self.burstMin,self.burstMax);
 
 #My subclass for CPU bound processes
 class CPUProcess(Process):
@@ -53,6 +55,7 @@ class CPUProcess(Process):
 		self.burstMin=200
 		self.burstMax=3000
 		self.bursts = 8
+		self.CPUBurst = random.randint(seld.burstMin,self.burstMax)
 
 
 
