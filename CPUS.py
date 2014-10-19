@@ -15,7 +15,7 @@ class CPUS():
 	#them in a list of all the jobs that terminated
 	def runCPUS(self):
 		finished_jobs=[]
-		for i in range(0, len(self.jobs)):
+		for i in xrange(len(self.jobs)-1, -1, -1):
 			if self.jobs[i].run():
 				finished_jobs.append(self.jobs[i])
 				self.jobs.pop(i)

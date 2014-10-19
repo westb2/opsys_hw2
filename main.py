@@ -7,18 +7,25 @@ k = cpu()
 k.run()'''
 import PROCESS
 import CPUS
+import IOwait
 from Queue import PriorityQueue
 #intializin ght eprocess
 def initializeprocesses(num_processes):
 	# set up the priority queue 
-	process_queue = MyPriorityQueue()
+	process_queue = PriorityQueue()
+	process_num=0
 	# creating the IO Processes and storing with priority  
-	for item in range(0,(num_processes*.8)):
-		k = PROCESS.IOProcess()
+	for item in range(0,int(num_processes*.8)):
+		process_num+=1
+		k = PROCESS.IOProcess(process_num)
+		print "Interacive process ID ", process_num, " entered the ready queue (requires ", k.burstTime, "ms CPU time)\n" 
 		process_queue.put(k, k.burstTime())
+
 	# creating the CPU bound Processes and storing with priotiry
 	for item in range(0,int((num_processes - int((num_processes *.8)) ))):
-		k = PROCESS.CPUProcess()
+		process_num+=1
+		k = PROCESS.CPUProcess(process_num)
+		print "CPU-bound process ID ", process_num, " entered the ready queue (requires ", k.burstTime, "ms CPU time)\n"
 		process_queue.put(k, k.burstTime())
 	# returning the priority queue
 	return process_queue
@@ -29,9 +36,10 @@ def simulateSJF(Processes, num_cpus, dead_condition):
 	cpus = CPUS.CPUS(num_cpus)
 	waiting_on_IO=IOwait.IOwait()
 	dead_processes=[]
+	time=0
 	#put the processes in the cpu
 	while True:
-		if !Processes.empty():
+		if not Processes.empty():
 			job=cpus.addJob(Processes.get())
 			if job!=None:
 				Processes.put(job, job.burstTime())
@@ -40,6 +48,7 @@ def simulateSJF(Processes, num_cpus, dead_condition):
 			break
 	#now we start running the simulation
 	while True:
+		time+=1
 		#make all the processes wait on IO then put all the ones that are finished waiting back into the Q
 		ready_processes=waiting_on_IO.wait_one()
 		for i in range(0,len(ready_processes)):
@@ -56,7 +65,7 @@ def simulateSJF(Processes, num_cpus, dead_condition):
 			else:
 				waiting_on_IO.addJob(finished_processes[i])
 				#put a new job on the CPU
-			if !Processes.empty():
+			if not Processes.empty():
 				cpus.addJob(Processes.get())
 		if len(dead_processes)>=dead_condition:
 			break
