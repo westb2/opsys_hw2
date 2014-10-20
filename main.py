@@ -5,9 +5,17 @@
 
 k = cpu()
 k.run()'''
+import SJFalg
+import SJFpreemptionalg
+import RRalg
+import PPalg
+
+import Queue
 import PROCESS
 import CPUS
 import IOwait
+import random
+from random import shuffle
 from Queue import PriorityQueue
 #intializin ght eprocess
 def initializeprocesses(num_processes):
@@ -18,59 +26,71 @@ def initializeprocesses(num_processes):
 	for item in range(0,int(num_processes*.8)):
 		process_num+=1
 		k = PROCESS.IOProcess(process_num)
-		print "Interacive process ID ", process_num, " entered the ready queue (requires ", k.burstTime, "ms CPU time)\n" 
-		process_queue.put(k, k.burstTime())
+		print "[time 0ms] Interacive process ID", process_num, "entered the ready queue (requires", "%dms CPU time)"%k.burstTime()
+		process_queue.put((k.burstTime(), k))
 
 	# creating the CPU bound Processes and storing with priotiry
 	for item in range(0,int((num_processes - int((num_processes *.8)) ))):
 		process_num+=1
 		k = PROCESS.CPUProcess(process_num)
-		print "CPU-bound process ID ", process_num, " entered the ready queue (requires ", k.burstTime, "ms CPU time)\n"
-		process_queue.put(k, k.burstTime())
+		print "[time 0ms] CPU-bound process ID", process_num, "entered the ready queue (requires", "%dms CPU time)"%k.burstTime()
+		process_queue.put((k.burstTime(), k))
 	# returning the priority queue
 	return process_queue
 
-# Simulate the SJF algorithm without preemtion
-def simulateSJF(Processes, num_cpus, dead_condition):
-	#get the cpus up and running
-	cpus = CPUS.CPUS(num_cpus)
-	waiting_on_IO=IOwait.IOwait()
-	dead_processes=[]
-	time=0
-	#put the processes in the cpu
-	while True:
-		if not Processes.empty():
-			job=cpus.addJob(Processes.get())
-			if job!=None:
-				Processes.put(job, job.burstTime())
-				break
+def initializeRRprocesses(num_processes):
+	process_list=[]
+	process_num=0
+	for item in range(0,int(num_processes*.8)):
+		process_num+=1
+		k = PROCESS.IOProcess(process_num)
+		#print "[time 0ms] Interacive process ID", process_num, "entered the ready queue (requires", "%dms CPU time)"%k.burstTime()
+		process_list.append(k)
+
+	# creating the CPU bound Processes and storing with priotiry
+	for item in range(0,int((num_processes - int((num_processes *.8)) ))):
+		process_num+=1
+		k = PROCESS.CPUProcess(process_num)
+		#print "[time 0ms] CPU-bound process ID", process_num, "entered the ready queue (requires", "%dms CPU time)"%k.burstTime()
+		process_list.append(k)
+	shuffle(process_list)
+	processQ=Queue.Queue()
+	for item in process_list:
+		processQ.put(item)
+		if item.isIOBound():
+			print "[time 0ms] Interacive process ID", item.ID(), "entered the ready queue (requires", "%dms CPU time)"%item.burstTime()
 		else:
-			break
-	#now we start running the simulation
-	while True:
-		time+=1
-		#make all the processes wait on IO then put all the ones that are finished waiting back into the Q
-		ready_processes=waiting_on_IO.wait_one()
-		for i in range(0,len(ready_processes)):
-			Processes.put(ready_processes[i], ready_processes[i].burstTime())
+			print "[time 0ms] CPU-bound process ID", process_num, "entered the ready queue (requires", "%dms CPU time)"%item.burstTime()
 
-		#run all the processes for one second, then any that are finished we will remove from the CPU and have
-		#them wait on IO. While we do this for each process that came off the CPU we will put a new one on
-		finished_processes=cpus.runCPUS()		
-		for i in range(0, len(finished_processes)):
-			#if the process is finshed kill it
-			if finished_processes[i].finished():
-				dead_processes.append(finished_processes[i])
-			#otherwise have it go wait on IO
-			else:
-				waiting_on_IO.addJob(finished_processes[i])
-				#put a new job on the CPU
-			if not Processes.empty():
-				cpus.addJob(Processes.get())
-		if len(dead_processes)>=dead_condition:
-			break
-			
+	return processQ
 
+def initializePPprocesses(num_processes):
+	process_list=[]
+	process_num=0
+	for item in range(0,int(num_processes*.8)):
+		process_num+=1
+		k = PROCESS.IOProcess(process_num)
+		r=random.randint(0,4)
+		k.setPriority(r)
+		k.TruePriority=r
+		print "[time 0ms] Interacive process ID", process_num, "entered the ready queue (requires", "%dms CPU time; priority %d)"%(k.burstTime(), k.priority())
+		
+		process_list.append(k)
+
+	# creating the CPU bound Processes and storing with priotiry
+	for item in range(0,int((num_processes - int((num_processes *.8)) ))):
+		process_num+=1
+		k = PROCESS.CPUProcess(process_num)
+		r=random.randint(0,4)
+		k.setPriority(r)
+		k.TruePriority=r
+		print "[time 0ms] CPU-bound process ID", process_num, "entered the ready queue (requires", "%dms CPU time; priority %d)"%(k.burstTime(), k.priority())
+		process_list.append(k)
+	process_list.sort()
+	"""for item in process_list:
+		print "Process %d with priority %d"%(item.ID(), item.priority())"""
+
+	return process_list
 
 
 #This is our function that will run our program, easy way to change numreical parameters
@@ -81,9 +101,15 @@ def main(num_processes, num_cpus):
 	#need to declare the CPU structure here
 
 	#run simulations	
-	simulateSJF(Processes, num_cpus, num_processes-IOprocesses)
-	simulateSJFpreemption(Processes, num_cpus)
-	simulateRR(Processes, num_cpus)
-	simulatePP(Processes, num_cpus)
+	SJFalg.simulateSJF(Processes, num_cpus, num_processes-IOprocesses)
+	Processes=initializeprocesses(num_processes)
+	#SJFpreemptionalg.simulateSJFpreemption(Processes, num_cpus, num_processes-IOprocesses)
+
+	Processes=initializeRRprocesses(num_processes)
+	RR_timeslice=100
+	RRalg.simulateRR(Processes, num_cpus, num_processes-IOprocesses, RR_timeslice)
+
+	Processes=initializePPprocesses(num_processes)
+	PPalg.simulatePP(Processes, num_cpus, num_processes-IOprocesses)
 
 main(12,1)
