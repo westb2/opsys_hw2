@@ -21,7 +21,7 @@ def simulateSJFpreemption(Processes, num_cpus, dead_condition):
 	#now we start running the simulation
 	while True:
 		time+=1
-		#make all the processes wait on IO then put all the ones that are finished waiting back into the Q
+		#make all the processes wait on IO then put all the ones that are finished waiting back into the Queue
 		ready_processes=waiting_on_IO.wait_one(time)
 		for i in range(0,len(ready_processes)):
 			Processes.put((ready_processes[i].burstTime(), ready_processes[i]))
@@ -45,7 +45,7 @@ def simulateSJFpreemption(Processes, num_cpus, dead_condition):
 					print "[time %dms] Interacive process ID"%time, cpus.jobs[potential_victim].ID(), "entered the ready queue (requires","%dms CPU time)"%cpus.jobs[potential_victim].burstTime()
 				else:
 					print "[time %dms] CPU-bound process ID"%time, cpus.jobs[potential_victim].ID(), "entered the ready queue (requires","%dms CPU time)"%cpus.jobs[potential_victim].burstTime()
-				#handle some stuff that 
+				#performing the context switch
 				ready_processes[i].context_switch()
 				Processes.put((cpus.jobs[potential_victim].burstTime(), cpus.jobs.pop(potential_victim)))
 
@@ -54,12 +54,10 @@ def simulateSJFpreemption(Processes, num_cpus, dead_condition):
 		#them wait on IO. While we do this for each process that came off the CPU we will put a new one on
 		finished_processes=cpus.runCPUS()		
 		for i in range(0, len(finished_processes)):
-
 			#if the process is finshed kill it
 			if finished_processes[i].finished():
 				dead_processes.append(finished_processes[i])
 				#notify that we have killed the process
-
 				#we must find the average turn time and wait time before this is done
 				print "[time %dms] CPU-bound process ID"%time, finished_processes[i].ID(), "terminated (avg turnaround time %dms, avg total wait time %d ms)"%(finished_processes[i].avgTurnaroundTime(), finished_processes[i].avgWaitTime())
 			#otherwise have it go wait on IO
@@ -80,8 +78,8 @@ def simulateSJFpreemption(Processes, num_cpus, dead_condition):
 			else:
 				break
 		if len(dead_processes)>=dead_condition:
-			#here we need to calculate the avg tt time, wait time, and avg cpu utilization
-			#collcect all the  times
+			#here we need to calculate the avg turnaround time, wait time, and avg cpu utilization
+			#collect all the  times
 			turnaroundTimes=[]
 			waitTimes=[]
 			process_jobs=0
@@ -103,8 +101,6 @@ def simulateSJFpreemption(Processes, num_cpus, dead_condition):
 			for process in dead_processes:
 				turnaroundTimes.extend(process.turnaroundTimes)
 				waitTimes.extend(process.waitTimes)
-			#print "there are %d jobs in process and %d jobs in the CPU and %d processes waiting on IO and %d dead processes"%(process_jobs, len(cpus.jobs), len(waiting_on_IO.jobs), len(dead_processes))
-
 			print "Turnaround time: min %d ms; avg %.3f ms; max %d ms"%(min(turnaroundTimes), sum(turnaroundTimes)/float(len(turnaroundTimes)), max(turnaroundTimes))
 			print "Wait time: min %d ms; avg %.3f ms; max %d ms"%(min(waitTimes), sum(waitTimes)/float(len(waitTimes)), max(waitTimes))
 			print "Average CPU Utilization: %.3f%%"%(100*(sum(turnaroundTimes)-sum(waitTimes))/(float(time)*num_cpus))	

@@ -5,7 +5,6 @@ class IOwait():
 
 	#our function to add a job
 	def addJob(self, job):
-		#need to define this in the PROCESS class
 		job.wait_on_IO()
 		self.jobs.append(job)
 

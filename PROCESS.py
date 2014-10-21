@@ -22,7 +22,7 @@ class Process(object):
 		self.CONTEXT_SWITCH=0
 		self.CONTEXT_SWITCHS=[]
 
-	#here we overload all of the comparision 
+	#here we overload all of the comparision operators
 	def __lt__(self, other):
 		return self.PRIORITY<other.PRIORITY
 
@@ -59,13 +59,12 @@ class Process(object):
 					print "[time %dms] Increased priority of IO-bound process ID %d to %d due to aging"%(time, self.IDEE, self.PRIORITY)
 				else:
 					print "[time %dms] Increased priority of CPU-bound process ID %d to %d due to aging"%(time, self.IDEE, self.PRIORITY)
+	
 	#this function gives us access to the ID of the process
 	def ID(self):
 		return self.IDEE
 
-	
 	#we call this when we enter the CPU to set the burst time and return the burst time
-
 	def set_burst_time(self, birthday):
 		self.BIRTHDAY=birthday
 		self.CPUBurst=random.randint(self.burstMin, self.burstMax)
@@ -80,7 +79,7 @@ class Process(object):
 		#if we are CPU bound, subtract 1 from the remainder of bursts we need
 		return self.CPUBurst
 
-	#this process takes care of running the process on the cpu. It returns whehter the process finished or not
+	#this process takes care of running the process on the cpu. It returns whether the process finished or not
 	def run(self):
 		self.CPUBurst-=1
 		self.RRtime+=1
@@ -107,9 +106,6 @@ class Process(object):
 		self.CPUBurst+=2
 		self.CONTEXT_SWITCH+=2
 
-	
-
-
 	#this is our function to return the wait time
 	def waitTime(self,time):
 		self.waitTimes.append(time-self.BIRTHDAY-self.LIFETIME)
@@ -131,8 +127,6 @@ class Process(object):
 		else:
 			return sum(self.waitTimes)/len(self.waitTimes)
 
-
-
 #My subclass for IO bound processes
 class IOProcess(Process):
 	def __init__(self, ID_):
@@ -144,6 +138,7 @@ class IOProcess(Process):
 		self.IOBOUND=True
 		self.CPUBurst = random.randint(self.burstMin,self.burstMax);
 		self.LIFETIME=self.CPUBurst
+		
 	def finished(self):
 		return False
 
@@ -158,8 +153,6 @@ class CPUProcess(Process):
 		self.bursts = 8
 		self.CPUBurst = random.randint(self.burstMin,self.burstMax)
 		self.LIFETIME=self.CPUBurst
-
-	
 
 	def finished(self):
 		return self.bursts<=0

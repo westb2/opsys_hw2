@@ -17,7 +17,7 @@ import IOwait
 import random
 from random import shuffle
 from Queue import PriorityQueue
-#intializin ght eprocess
+#intializing the processes
 def initializeprocesses(num_processes):
 	# set up the priority queue 
 	process_queue = PriorityQueue()
@@ -29,7 +29,7 @@ def initializeprocesses(num_processes):
 		print "[time 0ms] Interacive process ID", process_num, "entered the ready queue (requires", "%dms CPU time)"%k.burstTime()
 		process_queue.put((k.burstTime(), k))
 
-	# creating the CPU bound Processes and storing with priotiry
+	# creating the CPU bound Processes and storing with priority
 	for item in range(0,int((num_processes - int((num_processes *.8)) ))):
 		process_num+=1
 		k = PROCESS.CPUProcess(process_num)
@@ -41,17 +41,16 @@ def initializeprocesses(num_processes):
 def initializeRRprocesses(num_processes):
 	process_list=[]
 	process_num=0
+	# creating the IO bound processes 
 	for item in range(0,int(num_processes*.8)):
 		process_num+=1
 		k = PROCESS.IOProcess(process_num)
-		#print "[time 0ms] Interacive process ID", process_num, "entered the ready queue (requires", "%dms CPU time)"%k.burstTime()
 		process_list.append(k)
 
-	# creating the CPU bound Processes and storing with priotiry
+	# creating the CPU bound Processes and storing with priority
 	for item in range(0,int((num_processes - int((num_processes *.8)) ))):
 		process_num+=1
 		k = PROCESS.CPUProcess(process_num)
-		#print "[time 0ms] CPU-bound process ID", process_num, "entered the ready queue (requires", "%dms CPU time)"%k.burstTime()
 		process_list.append(k)
 	shuffle(process_list)
 	processQ=Queue.Queue()
@@ -67,6 +66,7 @@ def initializeRRprocesses(num_processes):
 def initializePPprocesses(num_processes):
 	process_list=[]
 	process_num=0
+	#creating the IO bound processes
 	for item in range(0,int(num_processes*.8)):
 		process_num+=1
 		k = PROCESS.IOProcess(process_num)
@@ -74,7 +74,6 @@ def initializePPprocesses(num_processes):
 		k.setPriority(r)
 		k.TruePriority=r
 		print "[time 0ms] Interacive process ID", process_num, "entered the ready queue (requires", "%dms CPU time; priority %d)"%(k.burstTime(), k.priority())
-		
 		process_list.append(k)
 
 	# creating the CPU bound Processes and storing with priotiry
@@ -87,23 +86,18 @@ def initializePPprocesses(num_processes):
 		print "[time 0ms] CPU-bound process ID", process_num, "entered the ready queue (requires", "%dms CPU time; priority %d)"%(k.burstTime(), k.priority())
 		process_list.append(k)
 	process_list.sort()
-	"""for item in process_list:
-		print "Process %d with priority %d"%(item.ID(), item.priority())"""
-
 	return process_list
 
-
-#This is our function that will run our program, easy way to change numreical parameters
+#This is our function that will run our program, easy way to change numerical parameters
 def main(num_processes, num_cpus):
 	#do some initialization
 	Processes=initializeprocesses(num_processes)
 	IOprocesses=int(num_processes*.8)
-	#need to declare the CPU structure here
 
 	#run simulations	
 	SJFalg.simulateSJF(Processes, num_cpus, num_processes-IOprocesses)
 	Processes=initializeprocesses(num_processes)
-	#SJFpreemptionalg.simulateSJFpreemption(Processes, num_cpus, num_processes-IOprocesses)
+	SJFpreemptionalg.simulateSJFpreemption(Processes, num_cpus, num_processes-IOprocesses)
 
 	Processes=initializeRRprocesses(num_processes)
 	RR_timeslice=100
@@ -111,5 +105,6 @@ def main(num_processes, num_cpus):
 
 	Processes=initializePPprocesses(num_processes)
 	PPalg.simulatePP(Processes, num_cpus, num_processes-IOprocesses)
-
+#running the entire file
+# the 12 is total number of processes, the 1 is the total number of cpus
 main(12,1)
